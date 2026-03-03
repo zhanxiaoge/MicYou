@@ -34,13 +34,13 @@ jobs:
       run: |
         mkdir -p ci-artifacts
         APK=$(ls composeApp/build/outputs/apk/debug/*.apk | head -n 1)
-        cp "$APK" "ci-artifacts/MicYou-Android${{ steps.version.outputs.version }}.apk"
+        cp "$APK" "ci-artifacts/MicYou-Android-${{ steps.version.outputs.version }}.apk"
 
     - name: Upload Android Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: MicYou-Android${{ steps.version.outputs.version }}.apk
-        path: ci-artifacts/MicYou-Android${{ steps.version.outputs.version }}.apk
+        name: MicYou-Android-${{ steps.version.outputs.version }}
+        path: ci-artifacts/MicYou-Android-${{ steps.version.outputs.version }}.apk
 
   build-windows:
     runs-on: windows-latest
@@ -99,19 +99,19 @@ jobs:
         $version = '${{ steps.version.outputs.version }}'
         $zip = Get-ChildItem -Path composeApp/build/distributions -Filter *.zip | Select-Object -First 1
         if (-not $zip) { throw "No zip found in composeApp/build/distributions" }
-        Copy-Item $zip.FullName ("ci-artifacts/MicYou-Win$version.zip") -Force
+        Copy-Item $zip.FullName ("ci-artifacts/MicYou-Win-$version.zip") -Force
 
         $installer = Get-ChildItem -Path composeApp/build/distributions -Filter *setup-nsis.exe | Select-Object -First 1
         if (-not $installer) { throw "No NSIS installer found in composeApp/build/distributions" }
-        Copy-Item $installer.FullName ("ci-artifacts/MicYou-Win$version-installer.exe") -Force
+        Copy-Item $installer.FullName ("ci-artifacts/MicYou-Win-$version-installer.exe") -Force
 
     - name: Upload Windows Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: MicYou-Win${{ steps.version.outputs.version }}
+        name: MicYou-Win-${{ steps.version.outputs.version }}
         path: |
-          ci-artifacts/MicYou-Win${{ steps.version.outputs.version }}.zip
-          ci-artifacts/MicYou-Win${{ steps.version.outputs.version }}-installer.exe
+          ci-artifacts/MicYou-Win-${{ steps.version.outputs.version }}.zip
+          ci-artifacts/MicYou-Win-${{ steps.version.outputs.version }}-installer.exe
 
   build-linux:
     runs-on: ubuntu-latest
@@ -255,11 +255,13 @@ jobs:
     - name: Prepare Linux No-JRE Artifact
       run: |
         mkdir -p ci-artifacts
-        TAR_FILE=$(ls composeApp/build/distributions/no-jre/*.tar.gz 2>/dev/null | head -n 1)
+        # 查找 tar.gz 或 tgz 文件
+        TAR_FILE=$(ls composeApp/build/distributions/no-jre/*.tar.gz composeApp/build/distributions/no-jre/*.tgz 2>/dev/null | head -n 1)
         if [ -f "$TAR_FILE" ]; then
           cp "$TAR_FILE" "ci-artifacts/MicYou-Linux-NoJRE-${{ steps.version.outputs.version }}.tar.gz"
         else
           echo "TAR.GZ package not found, check build output."
+          ls -la composeApp/build/distributions/no-jre/ 2>/dev/null || echo "Directory not found"
           exit 1
         fi
     - name: Upload Linux No-JRE Artifact
@@ -291,11 +293,13 @@ jobs:
     - name: Prepare macOS No-JRE Artifact
       run: |
         mkdir -p ci-artifacts
-        TAR_FILE=$(ls composeApp/build/distributions/no-jre/*.tar.gz 2>/dev/null | head -n 1)
+        # 查找 tar.gz 或 tgz 文件
+        TAR_FILE=$(ls composeApp/build/distributions/no-jre/*.tar.gz composeApp/build/distributions/no-jre/*.tgz 2>/dev/null | head -n 1)
         if [ -f "$TAR_FILE" ]; then
           cp "$TAR_FILE" "ci-artifacts/MicYou-macOS-NoJRE-${{ steps.version.outputs.version }}.tar.gz"
         else
           echo "TAR.GZ package not found, check build output."
+          ls -la composeApp/build/distributions/no-jre/ 2>/dev/null || echo "Directory not found"
           exit 1
         fi
     - name: Upload macOS No-JRE Artifact

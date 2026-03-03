@@ -268,11 +268,13 @@ jobs:
     - name: Prepare Linux No-JRE Artifact
       run: |
         mkdir -p ci-artifacts
-        TAR_FILE=$(ls composeApp/build/distributions/no-jre/*.tar.gz 2>/dev/null | head -n 1)
+        # 查找 tar.gz 或 tgz 文件
+        TAR_FILE=$(ls composeApp/build/distributions/no-jre/*.tar.gz composeApp/build/distributions/no-jre/*.tgz 2>/dev/null | head -n 1)
         if [ -f "$TAR_FILE" ]; then
           cp "$TAR_FILE" "ci-artifacts/MicYou-Linux-NoJRE-${{ steps.version.outputs.version }}.tar.gz"
         else
           echo "TAR.GZ package not found, check build output."
+          ls -la composeApp/build/distributions/no-jre/ 2>/dev/null || echo "Directory not found"
           exit 1
         fi
     - name: Upload Linux No-JRE Artifact
@@ -304,11 +306,13 @@ jobs:
     - name: Prepare macOS No-JRE Artifact
       run: |
         mkdir -p ci-artifacts
-        TAR_FILE=$(ls composeApp/build/distributions/no-jre/*.tar.gz 2>/dev/null | head -n 1)
+        # 查找 tar.gz 或 tgz 文件
+        TAR_FILE=$(ls composeApp/build/distributions/no-jre/*.tar.gz composeApp/build/distributions/no-jre/*.tgz 2>/dev/null | head -n 1)
         if [ -f "$TAR_FILE" ]; then
           cp "$TAR_FILE" "ci-artifacts/MicYou-macOS-NoJRE-${{ steps.version.outputs.version }}.tar.gz"
         else
           echo "TAR.GZ package not found, check build output."
+          ls -la composeApp/build/distributions/no-jre/ 2>/dev/null || echo "Directory not found"
           exit 1
         fi
     - name: Upload macOS No-JRE Artifact

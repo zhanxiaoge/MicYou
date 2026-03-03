@@ -573,6 +573,7 @@ tasks.register<Tar>("packageLinuxNoJreTarGz") {
     destinationDirectory.set(layout.buildDirectory.dir("distributions/no-jre"))
     archiveBaseName.set("${appName}-linux-no-jre")
     archiveVersion.set(version)
+    archiveExtension.set("tar.gz")
     compression = Compression.GZIP
 }
 
@@ -593,6 +594,7 @@ tasks.register<Tar>("packageMacosNoJreTarGz") {
     destinationDirectory.set(layout.buildDirectory.dir("distributions/no-jre"))
     archiveBaseName.set("${appName}-macos-no-jre")
     archiveVersion.set(version)
+    archiveExtension.set("tar.gz")
     compression = Compression.GZIP
 }
 
