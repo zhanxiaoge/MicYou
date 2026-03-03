@@ -1,6 +1,7 @@
 package com.lanrhyme.micyou
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColor
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -320,7 +321,26 @@ private fun HeaderSection(
                     }
                 }
                 Column {
-                    Text("MicYou Desktop", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                    val color1 = MaterialTheme.colorScheme.primary
+                    val color2 = MaterialTheme.colorScheme.tertiary
+                    
+                    val infiniteTransition = rememberInfiniteTransition(label = "DesktopTitleColor")
+                    val animatedColor by infiniteTransition.animateColor(
+                        initialValue = color1,
+                        targetValue = color2,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(4000, easing = LinearEasing),
+                            repeatMode = RepeatMode.Reverse
+                        ),
+                        label = "Color"
+                    )
+
+                    Text(
+                        "MicYou Desktop", 
+                        style = MaterialTheme.typography.titleSmall, 
+                        fontWeight = FontWeight.ExtraBold,
+                        color = animatedColor
+                    )
                     Text("Server", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }

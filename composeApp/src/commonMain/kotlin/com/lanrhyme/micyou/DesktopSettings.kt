@@ -971,6 +971,11 @@ fun SettingsContent(section: SettingsSection, viewModel: MainViewModel) {
             SettingsSection.About -> {
                 val uriHandler = LocalUriHandler.current
                 var showLicenseDialog by remember { mutableStateOf(false) }
+                var showContributorsDialog by remember { mutableStateOf(false) }
+
+                if (showContributorsDialog) {
+                    ContributorsDialog(onDismiss = { showContributorsDialog = false })
+                }
 
                 if (showLicenseDialog) {
                     AlertDialog(
@@ -1058,7 +1063,7 @@ fun SettingsContent(section: SettingsSection, viewModel: MainViewModel) {
                             headlineContent = { Text(strings.contributorsLabel) },
                             supportingContent = { Text(strings.contributorsDesc) },
                             leadingContent = { Icon(painterResource(Res.drawable.icon_star_fall), null,modifier = Modifier.size(24.dp)) },
-                            modifier = Modifier.clickable { uriHandler.openUri("https://github.com/LanRhyme/MicYou/graphs/contributors") },
+                            modifier = Modifier.clickable { showContributorsDialog = true },
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                         )
                     }

@@ -155,5 +155,7 @@
   "backgroundBlurLabel": "模糊",
   "cardOpacityLabel": "卡片透明度",
   "enableHazeEffectLabel": "毛玻璃效果",
-  "enableHazeEffectDesc": "为卡片添加毛玻璃模糊效果"
+  "enableHazeEffectDesc": "为卡片添加毛玻璃模糊效果",
+  "contributorsLoading": "正在加载贡献者...",
+  "contributorsPeopleCount": "%d 位贡献者"
 }

@@ -101,6 +101,8 @@ data class AppStrings(
     val androidAudioProcessingDesc: String = "Use hardware audio processing. May affect output quality.",
     val contributorsLabel: String = "Contributors",
     val contributorsDesc: String = "Thanks to everyone who contributed to this project.",
+    val contributorsLoading: String = "Loading contributors...",
+    val contributorsPeopleCount: String = "%d contributors",
     val autoConfigLabel: String = "Auto Configure Audio",
     val autoConfigDesc: String = "Automatically select optimal audio settings based on connection mode",
     val logsSection: String = "Logs",
