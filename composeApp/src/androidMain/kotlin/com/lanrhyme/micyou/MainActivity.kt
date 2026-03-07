@@ -1,14 +1,17 @@
 package com.lanrhyme.micyou
 
 import android.Manifest
+import android.content.Intent
 import android.os.Bundle
 import android.content.pm.PackageManager
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.collectAsState
@@ -27,6 +30,8 @@ class MainActivity : ComponentActivity() {
         Logger.i("MainActivity", "App started")
         
         BackgroundImagePicker.registerLauncher(this)
+
+        val shouldQuickStart = intent?.action == ACTION_QUICK_START
 
         val permissionsToRequest = mutableListOf<String>()
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
@@ -54,6 +59,30 @@ class MainActivity : ComponentActivity() {
             val keepScreenOn by appViewModel.uiState.collectAsState().let { state ->
                 derivedStateOf { state.value.keepScreenOn }
             }
+            val streamState by appViewModel.uiState.collectAsState().let { state ->
+                derivedStateOf { state.value.streamState }
+            }
+
+            LaunchedEffect(shouldQuickStart) {
+                if (shouldQuickStart && appViewModel.uiState.value.streamState == StreamState.Idle) {
+                    appViewModel.startStream()
+                    moveTaskToBack(true)
+                }
+            }
+
+            LaunchedEffect(shouldQuickStart, streamState) {
+                if (shouldQuickStart) {
+                    when (streamState) {
+                        StreamState.Streaming -> {
+                            Toast.makeText(this@MainActivity, R.string.qs_toast_connected, Toast.LENGTH_SHORT).show()
+                        }
+                        StreamState.Error -> {
+                            Toast.makeText(this@MainActivity, R.string.qs_toast_failed, Toast.LENGTH_SHORT).show()
+                        }
+                        else -> {}
+                    }
+                }
+            }
 
             DisposableEffect(keepScreenOn) {
                 if (keepScreenOn) {
@@ -69,6 +98,10 @@ class MainActivity : ComponentActivity() {
 
             App(viewModel = appViewModel)
         }
+    }
+
+    companion object {
+        const val ACTION_QUICK_START = "com.lanrhyme.micyou.ACTION_QUICK_START"
     }
 }
 
