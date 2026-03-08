@@ -34,6 +34,10 @@ enum class VisualizerStyle(val label: String) {
     Particles("Particles")
 }
 
+enum class UpdateDownloadState {
+    Idle, Downloading, Downloaded, Installing, Failed
+}
+
 data class AppUiState(
     val mode: ConnectionMode = ConnectionMode.Wifi,
     val streamState: StreamState = StreamState.Idle,
@@ -84,6 +88,12 @@ data class AppUiState(
     val showCloseConfirmDialog: Boolean = false,
     val rememberCloseAction: Boolean = false,
     val newVersionAvailable: GitHubRelease? = null,
+    val updateDownloadState: UpdateDownloadState = UpdateDownloadState.Idle,
+    val updateDownloadProgress: Float = 0f,
+    val updateDownloadedBytes: Long = 0,
+    val updateTotalBytes: Long = 0,
+    val updateErrorMessage: String? = null,
+    val autoCheckUpdate: Boolean = true,
     val pocketMode: Boolean = true,
     val visualizerStyle: VisualizerStyle = VisualizerStyle.VolumeRing,
     
@@ -184,6 +194,7 @@ class MainViewModel : ViewModel() {
         val savedEnableHazeEffect = settings.getBoolean("enable_haze_effect", false)
         
         val savedFloatingWindowEnabled = settings.getBoolean("floating_window_enabled", false)
+        val savedAutoCheckUpdate = settings.getBoolean("auto_check_update", true)
 
         _uiState.update { 
             it.copy(
@@ -224,7 +235,8 @@ class MainViewModel : ViewModel() {
                     cardOpacity = savedCardOpacity,
                     enableHazeEffect = savedEnableHazeEffect
                 ),
-                floatingWindowEnabled = savedFloatingWindowEnabled
+                floatingWindowEnabled = savedFloatingWindowEnabled,
+                autoCheckUpdate = savedAutoCheckUpdate
             ) 
         }
         
@@ -270,18 +282,40 @@ class MainViewModel : ViewModel() {
             }
         }
 
+        if (savedAutoCheckUpdate) {
+            viewModelScope.launch {
+                val result = updateChecker.checkUpdate()
+                result.onSuccess { release ->
+                    if (release != null) {
+                        _uiState.update { it.copy(newVersionAvailable = release) }
+                    }
+                }
+            }
+        }
+
+        // Collect download progress from UpdateChecker
         viewModelScope.launch {
-            val result = updateChecker.checkUpdate()
-            result.onSuccess { release ->
-                if (release != null) {
-                    _uiState.update { it.copy(newVersionAvailable = release) }
+            updateChecker.downloadProgress.collect { progress ->
+                _uiState.update {
+                    it.copy(
+                        updateDownloadProgress = progress.progress,
+                        updateDownloadedBytes = progress.downloadedBytes,
+                        updateTotalBytes = progress.totalBytes
+                    )
                 }
             }
         }
     }
 
     fun dismissUpdateDialog() {
-        _uiState.update { it.copy(newVersionAvailable = null) }
+        _uiState.update {
+            it.copy(
+                newVersionAvailable = null,
+                updateDownloadState = UpdateDownloadState.Idle,
+                updateDownloadProgress = 0f,
+                updateErrorMessage = null
+            )
+        }
     }
 
     fun checkUpdateManual() {
@@ -300,6 +334,52 @@ class MainViewModel : ViewModel() {
                 _uiState.update { it.copy(snackbarMessage = strings.updateCheckFailed.format(e.message)) }
             }
         }
+    }
+
+    fun downloadAndInstallUpdate() {
+        val release = _uiState.value.newVersionAvailable ?: return
+        val asset = updateChecker.findAssetForPlatform(release)
+        if (asset == null) {
+            // No matching asset - fall back to opening the release page
+            openUrl(release.htmlUrl)
+            dismissUpdateDialog()
+            return
+        }
+
+        _uiState.update { it.copy(updateDownloadState = UpdateDownloadState.Downloading, updateErrorMessage = null) }
+
+        viewModelScope.launch {
+            val targetPath = getUpdateDownloadPath(asset.name)
+            val result = updateChecker.downloadUpdate(asset.browserDownloadUrl, targetPath)
+
+            result.onSuccess { filePath ->
+                _uiState.update { it.copy(updateDownloadState = UpdateDownloadState.Downloaded) }
+                _uiState.update { it.copy(updateDownloadState = UpdateDownloadState.Installing) }
+                try {
+                    installUpdate(filePath)
+                } catch (e: Exception) {
+                    Logger.e("MainViewModel", "Install failed", e)
+                    _uiState.update {
+                        it.copy(
+                            updateDownloadState = UpdateDownloadState.Failed,
+                            updateErrorMessage = e.message
+                        )
+                    }
+                }
+            }.onFailure { e ->
+                _uiState.update {
+                    it.copy(
+                        updateDownloadState = UpdateDownloadState.Failed,
+                        updateErrorMessage = e.message
+                    )
+                }
+            }
+        }
+    }
+
+    fun setAutoCheckUpdate(enabled: Boolean) {
+        _uiState.update { it.copy(autoCheckUpdate = enabled) }
+        settings.putBoolean("auto_check_update", enabled)
     }
     
     private fun updateAudioEngineConfig() {
