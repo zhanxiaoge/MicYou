@@ -39,7 +39,14 @@
   <img alt="macOS" src="https://img.shields.io/badge/mac%20os-000000?style=for-the-badge&logo=apple&logoColor=F0F0F0" />
 </p>
 
-MicYou is a powerful tool that turns your Android device into a high-quality wireless microphone for your PC. Built with Kotlin Multiplatform and Jetpack Compose/Material 3.
+<h6 align="center">Support Me</h6>
+
+<p align="center">
+<a href="https://afdian.com/a/LanRhyme" target="_blank" rel="noopener noreferrer">
+  <img src="https://img.shields.io/badge/afdian-@LanRhyme-946ce6?style=for-the-badge&logo=afdian&logoColor=white" alt="afdian"></a>
+</p>
+
+MicYou is a powerful tool that turns your Android device into a high-quality microphone for your PC. Built with Kotlin Multiplatform and Jetpack Compose/Material 3.
 
 Based on the [AndroidMic](https://github.com/teamclouday/AndroidMic) project.
 
