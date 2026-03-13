@@ -207,27 +207,6 @@ actual class AudioEngine actual constructor() {
                             _lastError.value = msg
                             return@launch
                         }
-
-                        // 初始化音频效果
-                        try {
-                            if (NoiseSuppressor.isAvailable()) {
-                                noiseSuppressor = NoiseSuppressor.create(recorder.audioSessionId)
-                                noiseSuppressor?.enabled = enableNS
-                                Logger.d("AudioEngine", "NoiseSuppressor initialized, enabled=$enableNS")
-                            } else {
-                                Logger.d("AudioEngine", "NoiseSuppressor not available")
-                            }
-                            
-                            if (AutomaticGainControl.isAvailable()) {
-                                automaticGainControl = AutomaticGainControl.create(recorder.audioSessionId)
-                                automaticGainControl?.enabled = enableAGC
-                                Logger.d("AudioEngine", "AutomaticGainControl initialized, enabled=$enableAGC")
-                            } else {
-                                Logger.d("AudioEngine", "AutomaticGainControl not available")
-                            }
-                        } catch (e: Exception) {
-                             Logger.w("AudioEngine", "Failed to initialize audio effects: ${e.message}")
-                        }
                         
                         // 网络设置
                         val selectorManager = SelectorManager(Dispatchers.IO)

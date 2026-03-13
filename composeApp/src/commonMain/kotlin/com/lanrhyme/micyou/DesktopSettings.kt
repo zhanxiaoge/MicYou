@@ -395,6 +395,13 @@ fun SettingsContent(section: SettingsSection, viewModel: MainViewModel) {
                         onSelect = { viewModel.setLanguage(it) },
                         cardOpacity = cardOpacity
                     )
+                    SettingsSwitchItem(
+                        headline = strings.autoStartLabel,
+                        supporting = strings.autoStartDesc,
+                        checked = state.autoStart,
+                        onCheckedChange = { viewModel.setAutoStart(it) },
+                        cardOpacity = cardOpacity
+                    )
 
                     if (platform.type == PlatformType.Android) {
                         SettingsSwitchItem(
@@ -414,13 +421,6 @@ fun SettingsContent(section: SettingsSection, viewModel: MainViewModel) {
                     }
 
                     if (platform.type == PlatformType.Desktop) {
-                        SettingsSwitchItem(
-                            headline = strings.autoStartLabel,
-                            supporting = strings.autoStartDesc,
-                            checked = state.autoStart,
-                            onCheckedChange = { viewModel.setAutoStart(it) },
-                            cardOpacity = cardOpacity
-                        )
                         SettingsDropdownItem(
                             headline = strings.closeActionLabel,
                             selected = state.closeAction,

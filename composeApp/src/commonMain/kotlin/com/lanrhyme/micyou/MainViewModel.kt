@@ -41,7 +41,7 @@ enum class UpdateDownloadState {
 data class AppUiState(
     val mode: ConnectionMode = ConnectionMode.Wifi,
     val streamState: StreamState = StreamState.Idle,
-    val ipAddress: String = "192.168.1.5",
+    val ipAddress: String = "192.168.1.2",
     val port: String = "6000",
     val errorMessage: String? = null,
     val themeMode: ThemeMode = ThemeMode.System,
@@ -134,7 +134,7 @@ class MainViewModel : ViewModel() {
             else -> try { ConnectionMode.valueOf(savedModeName) } catch(e: Exception) { ConnectionMode.Wifi }
         }
         
-        val savedIp = settings.getString("ip_address", "192.168.1.5")
+        val savedIp = settings.getString("ip_address", "192.168.1.2")
         val savedPort = settings.getString("port", "6000")
         
         val savedThemeModeName = settings.getString("theme_mode", ThemeMode.System.name)
@@ -298,9 +298,10 @@ class MainViewModel : ViewModel() {
             viewModelScope.launch {
                 audioEngine.installDriver()
             }
-            if (savedAutoStart) {
-                startStream()
-            }
+        }
+
+        if (savedAutoStart) {
+            startStream()
         }
 
         if (savedAutoCheckUpdate) {

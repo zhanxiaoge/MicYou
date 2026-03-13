@@ -36,16 +36,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.LinkOff
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.Error
-import androidx.compose.material.icons.rounded.HourglassTop
-import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Mic
 import androidx.compose.material.icons.rounded.MicOff
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -81,7 +78,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.lanrhyme.micyou.BackHandlerCompat
 import com.lanrhyme.micyou.animation.EasingFunctions
 import com.lanrhyme.micyou.animation.rememberBreathAnimation
 import com.lanrhyme.micyou.animation.rememberGlowAnimation
@@ -153,6 +149,7 @@ fun MobileHome(viewModel: MainViewModel) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
                     .padding(padding)
                     .padding(12.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -191,7 +188,7 @@ fun MobileHome(viewModel: MainViewModel) {
                 AnimatedCardVisibility(
                     visible = contentVisible,
                     delayMillis = 250,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     MainControlCard(
                         state = state,
@@ -514,108 +511,10 @@ private fun MainControlCard(
         enabled = state.backgroundSettings.enableHazeEffect
     ) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            // Status indicator at top
-            Column(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                // Status icon
-                val statusColor by animateColorAsState(
-                    targetValue = when (state.streamState) {
-                        StreamState.Idle -> MaterialTheme.colorScheme.onSurfaceVariant
-                        StreamState.Connecting -> MaterialTheme.colorScheme.tertiary
-                        StreamState.Streaming -> MaterialTheme.colorScheme.primary
-                        StreamState.Error -> MaterialTheme.colorScheme.error
-                    },
-                    animationSpec = tween(300)
-                )
-
-                Surface(
-                    shape = MaterialTheme.shapes.medium,
-                    color = statusColor.copy(alpha = 0.12f),
-                    modifier = Modifier.size(40.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            when (state.streamState) {
-                                StreamState.Idle -> Icons.Rounded.Info
-                                StreamState.Connecting -> Icons.Rounded.HourglassTop
-                                StreamState.Streaming -> Icons.Rounded.CheckCircle
-                                StreamState.Error -> Icons.Rounded.Error
-                            },
-                            contentDescription = null,
-                            tint = statusColor,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-                
-                // Status text
-                val statusText = when (state.streamState) {
-                    StreamState.Idle -> strings.clickToStart
-                    StreamState.Connecting -> strings.statusConnecting
-                    StreamState.Streaming -> strings.statusStreaming
-                    StreamState.Error -> state.errorMessage ?: strings.statusError
-                }
-                
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Text(
-                        statusText,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = statusColor,
-                        fontWeight = FontWeight.Medium
-                    )
-                    if (isRunning) {
-                        Surface(
-                            shape = MaterialTheme.shapes.extraSmall,
-                            color = statusColor
-                        ) {
-                            Text(
-                                "LIVE",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-                            )
-                        }
-                    }
-                }
-                
-                // Error message
-                AnimatedVisibility(
-                    visible = state.streamState == StreamState.Error && state.errorMessage != null,
-                    enter = fadeIn() + expandVertically(),
-                    exit = fadeOut() + shrinkVertically()
-                ) {
-                    if (state.errorMessage != null) {
-                        Surface(
-                            shape = MaterialTheme.shapes.small,
-                            color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f),
-                            modifier = Modifier.padding(horizontal = 24.dp)
-                        ) {
-                            Text(
-                                state.errorMessage ?: "",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onErrorContainer,
-                                modifier = Modifier.padding(8.dp),
-                                maxLines = 3,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-                }
-            }
-
             // Audio visualizer
             if (isRunning) {
                 MobileAudioVisualizer(
-                    modifier = Modifier.size(240.dp),
+                    modifier = Modifier.size(200.dp),
                     audioLevel = audioLevel,
                     color = MaterialTheme.colorScheme.primary,
                     style = state.visualizerStyle
